@@ -1,0 +1,49 @@
+:root {
+  color-scheme: light dark;
+  --bg: #fafafa;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --line: #e4e4e4;
+  --user: #1a1a1a;
+  --user-fg: #fafafa;
+  --bot: #ffffff;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111; --fg: #ececec; --muted: #9a9a9a; --line: #2a2a2a; --user: #ececec; --user-fg: #111; --bot: #1a1a1a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); }
+
+.chat { max-width: 720px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; padding: 24px 16px; gap: 16px; }
+header h1 { margin: 0; font-size: 1.25rem; }
+header p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+.messages { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.messages li { max-width: 85%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; animation: in 180ms ease-out; }
+.messages li p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.messages li p + p { margin-top: 8px; }
+.messages .user { align-self: flex-end; background: var(--user); color: var(--user-fg); }
+.messages .assistant { align-self: flex-start; background: var(--bot); border: 1px solid var(--line); }
+.messages .empty { align-self: center; color: var(--muted); }
+.messages .tool { color: var(--muted); font-size: 0.85rem; }
+.error { color: #c0392b; margin: 0; }
+
+form { display: flex; gap: 8px; position: sticky; bottom: 16px; }
+form input { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bot); color: var(--fg); font: inherit; }
+form button { flex-shrink: 0; padding: 0 18px; border-radius: 12px; border: 0; background: var(--user); color: var(--user-fg); font: inherit; cursor: pointer; transition: opacity 150ms; }
+form button:disabled { opacity: 0.4; cursor: default; }
+
+@keyframes in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .messages li { animation: none; } }
+
+/* Widget (/embed, dentro do iframe): compacto, ocupa o quadro inteiro. */
+.chat.embed { max-width: none; min-height: 100dvh; padding: 14px 12px; gap: 10px; }
+.chat.embed header { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.chat.embed header h1 { font-size: 1rem; }
+.chat.embed header p { font-size: 0.8rem; }
+.chat.embed .messages li { max-width: 92%; font-size: 0.95rem; }
+.chat.embed form { bottom: 12px; }
+/* No celular o painel ocupa a tela e o botão de fechar (do widget, fora do iframe)
+   fica no canto superior: o cabeçalho reserva o espaço dele. */
+@media (max-width: 480px) { .chat.embed header { padding-right: 64px; } }

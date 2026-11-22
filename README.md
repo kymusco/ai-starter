@@ -1,0 +1,121 @@
+# AI Starter
+
+Um app de IA completo, pronto para editar e publicar:
+
+- **Chat** em Next.js, com a resposta chegando em tempo real.
+- **Agente** com [Mastra](https://mastra.ai): ferramentas, memória por usuário e busca na
+  base de conhecimento do seu produto (RAG).
+- **Workflow com aprovação humana**: o agente abre chamados; os urgentes esperam um humano
+  aprovar antes de gravar.
+- **PostgreSQL com pgvector**: conversas, memória, vetores e os dados do seu app no mesmo banco.
+
+```
+navegador ──▶ web (Next.js, público) ──▶ agent (Mastra, privado) ──▶ db (PostgreSQL + pgvector)
+```
+
+O agente não tem endereço público: só o `web` fala com ele, e a chave do modelo mora só nele.
+
+## Rodar no seu computador
+
+Precisa de Node 22.13+ e Docker (para o banco).
+
+```bash
+cp .env.example .env      # ponha a sua OPENAI_API_KEY
+npm install
+npm run db                # cria o PostgreSQL com pgvector no Docker (depois: npm run db:start)
+npm run dev               # agente em :4111, chat em http://localhost:3000
+```
+
+Na primeira subida o agente carrega `apps/agent/src/mastra/public/docs` como base de conhecimento.
+
+Em desenvolvimento, **http://localhost:4111** abre o Mastra Studio (preencha a URL com
+`http://localhost:4111`): converse direto com o agente, veja o rastro de cada chamada e
+aprove os chamados pausados em **Workflows**.
+
+## Agente e workflow: os dois modos
+
+- **Agente** (`agents/assistant.ts`): o modelo decide sozinho o que fazer. Bom para conversa
+  aberta.
+- **Workflow** (`workflows/open-ticket.ts`): passos fixos, na ordem que você define. Bom
+  para processo com regra:
+
+  ```
+  classify (o modelo classifica) ──▶ approve (pausa se a prioridade for alta) ──▶ save (grava em tickets)
+  ```
+
+  O agente usa o workflow pela ferramenta `open-ticket`. Uma execução pausada fica salva no
+  PostgreSQL e sobrevive a reinício e a deploy. Para aprovar fora do Studio:
+
+  ```bash
+  curl -X POST "http://localhost:4111/api/workflows/openTicket/resume-async?runId=<id>" \
+    -H 'content-type: application/json' \
+    -d '{"step":"approve","resumeData":{"approved":true,"approvedBy":"maria"}}'
+  ```
+
+## Publicar na Kymus
+
+```bash
+npx kymus login              # escolha o projeto e o alcance "também criar serviços"
+npx kymus deploy --env sandbox
+```
+
+O `kymus.yaml` descreve os três serviços e como eles se ligam: o `deploy` cria o banco, o
+agente e o chat, envia a pasta de cada um (`apps/agent`, `apps/web`) e implanta, nessa ordem.
+O banco e a senha nascem na hora. A única coisa que você informa é a chave do modelo: se ela
+está no `.env`, o `deploy` pergunta se pode levá-la (vai como segredo do serviço, nunca no
+pacote). Só o `web` ganha endereço público.
+
+Produção só pelo nome: `npx kymus deploy --env production`.
+
+## Pôr o assistente em outro site (widget)
+
+Uma linha, em qualquer página (HTML, WordPress, outro framework):
+
+```html
+<script src="https://SEU-ENDERECO/widget.js" async></script>
+```
+
+Aparece um botão no canto; o chat abre num painel (tela cheia no celular). Opcionais:
+`data-color="#2f4f3a"`, `data-position="left"`, `data-label="Fale com a gente"`.
+Para testar localmente: `npx serve examples -l 5500` e abra `http://localhost:5500/widget-demo.html`.
+
+Em produção, diga quais sites podem embutir o chat, para outro site não pendurar o seu
+assistente (e gastar a sua chave): `WIDGET_ALLOWED_ORIGINS="https://loja.com.br https://www.loja.com.br"`
+nas variáveis do `web`.
+
+## Limite de uso
+
+Cada mensagem custa dinheiro de modelo, e a rota do chat é pública. O agente conta no
+PostgreSQL (vale com várias réplicas e sobrevive a deploy) e recusa com uma mensagem
+amigável quando passa de um limite:
+
+| variável | padrão | o quê |
+|---|---|---|
+| `CHAT_LIMIT_VISITOR_HOUR` | 30 | mensagens por visitante por hora |
+| `CHAT_LIMIT_IP_HOUR` | 100 | mensagens por endereço IP por hora |
+| `CHAT_LIMIT_TOTAL_DAY` | 2000 | teto do dia para o app inteiro (a rede de segurança do custo) |
+
+Mensagens com mais de 4.000 caracteres são recusadas antes de chegar ao modelo.
+
+## Onde mexer
+
+| quero… | arquivo |
+|---|---|
+| mudar o comportamento do agente | `apps/agent/src/mastra/agents/assistant.ts` |
+| dar uma ferramenta nova ao agente | `apps/agent/src/mastra/tools/` (copie `current-time.ts`) |
+| criar um processo com passos e aprovação | `apps/agent/src/mastra/workflows/` (copie `open-ticket.ts`) |
+| trocar a base de conhecimento | `apps/agent/src/mastra/public/docs/` e depois `npm run ingest` |
+| trocar o modelo ou o provedor | `MODEL` e `EMBEDDING_MODEL` no `.env` |
+| mudar a tela | `apps/web/app/chat.tsx` e `globals.css` (a página e o widget usam o mesmo componente) |
+| mudar o botão do widget | `apps/web/public/widget.js` |
+
+### Trocar de provedor
+
+`MODEL` aceita `provedor/modelo`: `anthropic/claude-sonnet-4-5`, `google/gemini-2.5-flash`,
+`openrouter/…`. Ponha a chave do provedor (`ANTHROPIC_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`,
+`OPENROUTER_API_KEY`). O `EMBEDDING_MODEL` precisa de um provedor que gere embeddings. Ao
+trocá-lo, rode `npm run ingest`: vetores de modelos diferentes não se misturam.
+
+## Licença
+
+MIT
