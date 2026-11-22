@@ -37,3 +37,6 @@ environments:
         start: npm start
         variables:
           AGENT_URL: ${{ agent.URL }}
+          # Senha da tela /admin, que aprova os chamados urgentes (12 caracteres ou mais).
+          ADMIN_PASSWORD:
+            secret: true

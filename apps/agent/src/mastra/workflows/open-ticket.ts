@@ -68,8 +68,8 @@ const save = createStep({
   description: 'Grava o chamado na tabela tickets',
   inputSchema: ticketSchema.extend({ approvedBy: z.string().optional() }),
   outputSchema: z.object({ ticketId: z.number(), priority: z.string(), summary: z.string() }),
-  execute: async ({ inputData }) => {
-    const ticketId = await insertTicket(inputData);
+  execute: async ({ inputData, runId }) => {
+    const ticketId = await insertTicket({ ...inputData, runId });
     return { ticketId, priority: inputData.priority, summary: inputData.summary };
   },
 });

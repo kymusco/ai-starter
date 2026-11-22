@@ -1,4 +1,9 @@
+import { existsSync } from 'node:fs';
 import type { NextConfig } from 'next';
+
+// Em desenvolvimento, o .env da raiz vale para os dois apps. Em produção, as
+// variáveis vêm do serviço.
+if (process.env.NODE_ENV !== 'production' && existsSync('../../.env')) process.loadEnvFile('../../.env');
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,

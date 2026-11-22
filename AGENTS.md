@@ -27,7 +27,7 @@ Monorepo com npm workspaces. Leia o `README.md` para a visão geral.
 npm run dev          # os dois apps
 npm run typecheck    # tem de sair sem erro
 npm run build        # o mesmo build da produção
-npm run ingest       # recarrega a base depois de mudar apps/agent/src/mastra/public/docs
+npm run ingest       # força a recarga da base (a subida já recarrega se os documentos mudaram)
 ```
 
 ## Regras
@@ -42,6 +42,12 @@ npm run ingest       # recarrega a base depois de mudar apps/agent/src/mastra/pu
   `apps/agent/src/mastra/middleware/rate-limit.ts` (registre em `index.ts`).
 - **Visitante** é o UUID que o navegador guarda (`app/chat.tsx`), mandado em `x-visitor-id`.
   Não use cookie para isso: dentro do widget ele vira cookie de terceiro e não chega.
+- **Aprovação de chamados:** a tela é `apps/web/app/admin`, protegida por `ADMIN_PASSWORD`
+  (sem ela, fica fechada). Quem aprovou vem da sessão, nunca do corpo da requisição.
+- **Rota do web que muda estado** confere `isSameOrigin` (`apps/web/lib/security.ts`). Isso não
+  barra script fora do navegador: custo se protege com o limite de uso.
+- **Base de conhecimento:** o agente recarrega na subida quando `public/docs` muda (hash em
+  `knowledge_state`). Não precisa de passo manual no deploy.
 - **Conexão com o banco** é sempre a `DATABASE_URL`, montada no `kymus.yaml` com as
   referências do `db`. Não escreva host, usuário ou senha no código.
 - **Trocou o modelo de embedding?** Rode `npm run ingest`: a dimensão do índice muda.

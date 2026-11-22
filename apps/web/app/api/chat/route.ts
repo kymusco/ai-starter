@@ -1,6 +1,7 @@
+import { AGENT_URL, clientIp, isSameOrigin } from '../../../lib/security';
+
 // O navegador fala só com o web; o web repassa ao agente pela rede privada.
 // Assim o agente (e a chave do modelo) nunca fica exposto na internet.
-const AGENT_URL = process.env.AGENT_URL || 'http://localhost:4111';
 // O visitante chega num cabeçalho, gerado e guardado pelo navegador (app/chat.tsx).
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // Mensagem maior que isto não chega ao modelo: corta abuso barato (colar um livro).
@@ -8,15 +9,8 @@ const MAX_MESSAGE_CHARS = 4000;
 
 type UIMessage = { role?: string; parts?: { type?: string; text?: string }[] };
 
-/** O IP de quem chamou, como o proxy da frente repassa. */
-function clientIp(req: Request): string {
-  const h = req.headers;
-  // A borda e o proxy da Cloud preenchem estes cabeçalhos. O primeiro endereço do
-  // x-forwarded-for é o do cliente quando há um proxy só na frente.
-  return h.get('cf-connecting-ip') ?? h.get('x-real-ip') ?? h.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
-}
-
 export async function POST(req: Request) {
+  if (!isSameOrigin(req)) return Response.json({ error: 'Origem não permitida.' }, { status: 403 });
   const { id, messages } = (await req.json()) as { id: string; messages: UIMessage[] };
   const last = messages.at(-1);
   const text = (last?.parts ?? []).map((p) => (p.type === 'text' ? p.text ?? '' : '')).join('');

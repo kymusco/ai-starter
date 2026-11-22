@@ -26,7 +26,8 @@ npm run db                # cria o PostgreSQL com pgvector no Docker (depois: np
 npm run dev               # agente em :4111, chat em http://localhost:3000
 ```
 
-Na primeira subida o agente carrega `apps/agent/src/mastra/public/docs` como base de conhecimento.
+O agente carrega `apps/agent/src/mastra/public/docs` como base de conhecimento na primeira
+subida e de novo sempre que os documentos mudarem, inclusive num novo deploy.
 
 Em desenvolvimento, **http://localhost:4111** abre o Mastra Studio (preencha a URL com
 `http://localhost:4111`): converse direto com o agente, veja o rastro de cada chamada e
@@ -44,13 +45,11 @@ aprove os chamados pausados em **Workflows**.
   ```
 
   O agente usa o workflow pela ferramenta `open-ticket`. Uma execução pausada fica salva no
-  PostgreSQL e sobrevive a reinício e a deploy. Para aprovar fora do Studio:
+  PostgreSQL e sobrevive a reinício e a deploy.
 
-  ```bash
-  curl -X POST "http://localhost:4111/api/workflows/openTicket/resume-async?runId=<id>" \
-    -H 'content-type: application/json' \
-    -d '{"step":"approve","resumeData":{"approved":true,"approvedBy":"maria"}}'
-  ```
+**Aprovar chamados:** abra `/admin`, entre com seu nome e a `ADMIN_PASSWORD` (12 caracteres
+ou mais), e aprove ou recuse. O nome fica registrado no chamado. Sem a senha, a tela fica
+fechada.
 
 ## Publicar na Kymus
 
@@ -61,9 +60,8 @@ npx kymus deploy --env sandbox
 
 O `kymus.yaml` descreve os três serviços e como eles se ligam: o `deploy` cria o banco, o
 agente e o chat, envia a pasta de cada um (`apps/agent`, `apps/web`) e implanta, nessa ordem.
-O banco e a senha nascem na hora. A única coisa que você informa é a chave do modelo: se ela
-está no `.env`, o `deploy` pergunta se pode levá-la (vai como segredo do serviço, nunca no
-pacote). Só o `web` ganha endereço público.
+O banco e a senha nascem na hora. Você informa dois segredos, a chave do modelo e a `ADMIN_PASSWORD`: se estão no `.env`, o
+`deploy` pergunta se pode levá-los (vão como segredo do serviço, nunca no pacote). Só o `web` ganha endereço público.
 
 Produção só pelo nome: `npx kymus deploy --env production`.
 
@@ -79,9 +77,12 @@ Aparece um botão no canto; o chat abre num painel (tela cheia no celular). Opci
 `data-color="#2f4f3a"`, `data-position="left"`, `data-label="Fale com a gente"`.
 Para testar localmente: `npx serve examples -l 5500` e abra `http://localhost:5500/widget-demo.html`.
 
-Em produção, diga quais sites podem embutir o chat, para outro site não pendurar o seu
-assistente (e gastar a sua chave): `WIDGET_ALLOWED_ORIGINS="https://loja.com.br https://www.loja.com.br"`
-nas variáveis do `web`.
+Em produção, diga quais sites podem exibir o widget, nas variáveis do `web`:
+`WIDGET_ALLOWED_ORIGINS="https://loja.com.br https://www.loja.com.br"`.
+
+O que cada proteção faz: essa lista controla quem embute o `iframe`; a rota do chat recusa
+chamadas de páginas de outra origem no navegador. Um script fora do navegador consegue
+forjar a origem, e contra ele quem protege o seu custo são os **limites de uso** abaixo.
 
 ## Limite de uso
 
@@ -104,9 +105,10 @@ Mensagens com mais de 4.000 caracteres são recusadas antes de chegar ao modelo.
 | mudar o comportamento do agente | `apps/agent/src/mastra/agents/assistant.ts` |
 | dar uma ferramenta nova ao agente | `apps/agent/src/mastra/tools/` (copie `current-time.ts`) |
 | criar um processo com passos e aprovação | `apps/agent/src/mastra/workflows/` (copie `open-ticket.ts`) |
-| trocar a base de conhecimento | `apps/agent/src/mastra/public/docs/` e depois `npm run ingest` |
+| trocar a base de conhecimento | `apps/agent/src/mastra/public/docs/` (o próximo deploy recarrega; no local, reinicie ou rode `npm run ingest`) |
 | trocar o modelo ou o provedor | `MODEL` e `EMBEDDING_MODEL` no `.env` |
 | mudar a tela | `apps/web/app/chat.tsx` e `globals.css` (a página e o widget usam o mesmo componente) |
+| mudar a tela de aprovação | `apps/web/app/admin/page.tsx` |
 | mudar o botão do widget | `apps/web/public/widget.js` |
 
 ### Trocar de provedor
