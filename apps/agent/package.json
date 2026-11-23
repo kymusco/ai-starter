@@ -10,12 +10,15 @@
     "build": "mastra build",
     "start": "cd .mastra/output && node index.mjs",
     "ingest": "node --env-file-if-exists=../../.env --import tsx scripts/ingest.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts"
   },
   "dependencies": {
     "@mastra/ai-sdk": "1.12.0",
     "@mastra/core": "1.85.0",
+    "@mastra/evals": "1.10.11",
     "@mastra/memory": "1.41.2",
+    "@mastra/observability": "1.24.2",
     "@mastra/pg": "1.37.0",
     "@mastra/rag": "2.8.1",
     "ai": "7.0.179",

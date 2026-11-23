@@ -29,6 +29,9 @@ environments:
           CHAT_LIMIT_VISITOR_HOUR: "30"
           CHAT_LIMIT_IP_HOUR: "100"
           CHAT_LIMIT_TOTAL_DAY: "2000"
+          # Traces e metricas: dias de historico. Avaliacoes: fracao das respostas (0 desliga).
+          OBSERVABILITY_RETENTION_DAYS: "14"
+          EVAL_SAMPLE_RATE: "0.1"
 
       web:
         type: nodejs

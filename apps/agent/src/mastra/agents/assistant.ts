@@ -1,6 +1,7 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { config } from '../config';
+import { liveScorers } from '../evals/scorers';
 import { embedder, storage, vectorStore } from '../rag/store';
 import { currentTime } from '../tools/current-time';
 import { searchKnowledge } from '../tools/search-knowledge';
@@ -21,6 +22,8 @@ export const assistant = new Agent({
   tools: { searchKnowledge, currentTime, openTicket },
   // Memória no PostgreSQL: as últimas mensagens da conversa e, por busca semântica,
   // trechos de conversas antigas do mesmo usuário.
+  // Avaliação automática de uma amostra das respostas (EVAL_SAMPLE_RATE).
+  scorers: liveScorers,
   memory: new Memory({
     storage,
     vector: vectorStore,
