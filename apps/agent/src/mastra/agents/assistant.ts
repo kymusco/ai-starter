@@ -21,6 +21,9 @@ export const assistant = new Agent({
 - Depois de abrir: se o status for "aberto", informe o número do chamado; se for "aguardando_aprovacao", diga que o chamado foi registrado e aguarda a aprovação do time, sem prometer prazo.
 - Não prometa anexar informação depois: diga que, se precisar de mais detalhes, o time vai pedir pelo chamado. Não afirme que alguém já entrou em contato.`,
   model: config.model,
+  // Atendimento precisa responder logo: com o raciocínio padrão, o gpt-5-mini ficava
+  // de 6 a 28 s em silêncio antes da primeira palavra. Outro provedor ignora esta opção.
+  defaultOptions: { providerOptions: { openai: { reasoningEffort: 'low' } } },
   // open-ticket inicia o workflow de mesmo nome (apps/agent/src/mastra/workflows).
   tools: { searchKnowledge, currentTime, openTicket },
   // Memória no PostgreSQL: as últimas mensagens da conversa e, por busca semântica,
