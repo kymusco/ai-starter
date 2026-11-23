@@ -18,7 +18,10 @@ environments:
         type: nodejs
         port: 4111
         exposed: false
-        start: npm start
+        # Imagem so com o resultado do build (apps/agent/Dockerfile): menor e mais rapida.
+        source:
+          build:
+            pack: dockerfile
         variables:
           DATABASE_URL: postgresql://${{ db.POSTGRES_USER }}:${{ db.POSTGRES_PASSWORD }}@${{ db.HOST }}:${{ db.PORT }}/${{ db.POSTGRES_DB }}
           MODEL: openai/gpt-5-mini

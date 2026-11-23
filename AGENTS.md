@@ -52,6 +52,8 @@ npm run ingest       # força a recarga da base (a subida já recarrega se os do
 - **Observabilidade:** todo processador de span precisa manter `TextRedactor`; scorer novo usa
   `prepareRun` com `redactDeep`, ou grava a conversa original na tabela de notas. Nota e motivo
   saem da mesma resposta do juiz.
+- **Imagem do agente:** `apps/agent/Dockerfile` leva só `.mastra/output`. Arquivo que o agente lê
+  em produção precisa estar em `src/mastra/public`, senão não entra na imagem.
 - **Conexão com o banco** é sempre a `DATABASE_URL`, montada no `kymus.yaml` com as
   referências do `db`. Não escreva host, usuário ou senha no código.
 - **Trocou o modelo de embedding?** Rode `npm run ingest`: a dimensão do índice muda.
