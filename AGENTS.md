@@ -33,8 +33,10 @@ npm run ingest       # força a recarga da base (a subida já recarrega se os do
 
 ## Regras
 
-- **O agente é privado.** Não exponha `apps/agent` na internet nem chame o agente direto do
-  navegador: o navegador fala com `apps/web`, que repassa pela rede privada.
+- **Auth do agente** (`apps/agent/src/mastra/auth.ts`): o endereço público existe para o Studio
+  e tudo exige login. O navegador do visitante fala com `apps/web`, que chama o agente pela rede
+  privada com `AGENT_API_TOKEN`, válido só para `POST /chat`. Rota nova do web precisa ser
+  liberada ali. Não use `requiresAuth: false` em rota que lê dado ou chama modelo.
 - **Segredo só no agente.** Chaves de modelo e de APIs ficam nas variáveis do `agent`. Nada
   com `NEXT_PUBLIC_` carrega segredo.
 - **Variável nova:** documente em `.env.example` e declare no serviço certo do `kymus.yaml`
@@ -43,8 +45,7 @@ npm run ingest       # força a recarga da base (a subida já recarrega se os do
   `apps/agent/src/mastra/middleware/rate-limit.ts` (registre em `index.ts`).
 - **Visitante** é o UUID que o navegador guarda (`app/chat.tsx`), mandado em `x-visitor-id`.
   Não use cookie para isso: dentro do widget ele vira cookie de terceiro e não chega.
-- **Aprovação de chamados:** a tela é `apps/web/app/admin`, protegida por `ADMIN_PASSWORD`
-  (sem ela, fica fechada). Quem aprovou vem da sessão, nunca do corpo da requisição.
+- **Aprovação de chamados:** pelo Studio, em Workflows, retomando a execução pausada.
 - **Rota do web que muda estado** confere `isSameOrigin` (`apps/web/lib/security.ts`). Isso não
   barra script fora do navegador: custo se protege com o limite de uso.
 - **Base de conhecimento:** o agente recarrega na subida quando `public/docs` muda (hash em

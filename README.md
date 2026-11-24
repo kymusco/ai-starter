@@ -10,10 +10,13 @@ Um app de IA completo, pronto para editar e publicar:
 - **PostgreSQL com pgvector**: conversas, memória, vetores e os dados do seu app no mesmo banco.
 
 ```
-navegador ──▶ web (Next.js, público) ──▶ agent (Mastra, privado) ──▶ db (PostgreSQL + pgvector)
+visitante ──▶ web (Next.js) ──token──▶ agent (Mastra) ──▶ db (PostgreSQL + pgvector)
+você ──login──▶ Studio (servido pelo agent)
 ```
 
-O agente não tem endereço público: só o `web` fala com ele, e a chave do modelo mora só nele.
+O endereço público do agente existe para o Studio, e tudo nele exige login. O `web` chama o
+agente pela rede privada, com um token que só vale para o chat. A chave do modelo mora só no
+agente.
 
 ## Rodar no seu computador
 
@@ -47,9 +50,9 @@ avaliações, e acompanhe os workflows.
   O agente usa o workflow pela ferramenta `open-ticket`. Uma execução pausada fica salva no
   PostgreSQL e sobrevive a reinício e a deploy.
 
-**Aprovar chamados:** abra `/admin`, entre com seu nome e a `ADMIN_PASSWORD` (12 caracteres
-ou mais), e aprove ou recuse. O nome fica registrado no chamado. Sem a senha, a tela fica
-fechada.
+**Aprovar chamados:** no Studio, abra **Workflows**, escolha `open-ticket`, entre na execução
+pausada, preencha **Approved** e **Approved By** e clique em **Resume**. O chat e o chamado são
+exemplos de como consumir o agente e o workflow: troque pelos seus.
 
 ## Traces, métricas e avaliações
 
@@ -73,14 +76,21 @@ separado; acima de ~100 chamadas por segundo, o Mastra recomenda ClickHouse.
 ## Publicar na Kymus
 
 ```bash
+npm run secrets              # gera no .env o login do Studio e o token do web
 npx kymus login              # escolha o projeto e o alcance "também criar serviços"
 npx kymus deploy --env sandbox
 ```
 
 O `kymus.yaml` descreve os três serviços e como eles se ligam: o `deploy` cria o banco, o
 agente e o chat, envia a pasta de cada um (`apps/agent`, `apps/web`) e implanta, nessa ordem.
-O banco e a senha nascem na hora. Você informa dois segredos, a chave do modelo e a `ADMIN_PASSWORD`: se estão no `.env`, o
-`deploy` pergunta se pode levá-los (vão como segredo do serviço, nunca no pacote). Só o `web` ganha endereço público.
+O banco e a senha nascem na hora. Os segredos (chave do modelo, `STUDIO_TOKEN` e
+`AGENT_API_TOKEN`) saem do `.env`: o `deploy` pergunta se pode levá-los, como segredo do
+serviço, nunca no pacote. O `web` e o `agent` ganham endereço público.
+
+**Entrar no Studio:** abra o endereço do `agent` e use o valor de `STUDIO_TOKEN` como senha (o
+e-mail é ignorado). Sem os tokens, o agente não sobe. Quem entra tem acesso total, inclusive às
+conversas nos traces: compartilhe só com quem cuida do app. Para SSO ou perfis de acesso, veja
+os [provedores do Mastra](https://mastra.ai/docs/auth/overview); alguns exigem licença.
 
 Produção só pelo nome: `npx kymus deploy --env production`.
 
@@ -128,7 +138,7 @@ Mensagens com mais de 4.000 caracteres são recusadas antes de chegar ao modelo.
 | trocar o modelo ou o provedor | `MODEL` e `EMBEDDING_MODEL` no `.env` |
 | mudar a tela | `apps/web/app/chat.tsx` e `globals.css` (a página e o widget usam o mesmo componente) |
 | mudar as avaliações | `apps/agent/src/mastra/evals/scorers.ts` |
-| mudar a tela de aprovação | `apps/web/app/admin/page.tsx` |
+| mudar quem acessa o agente | `apps/agent/src/mastra/auth.ts` |
 | mudar o botão do widget | `apps/web/public/widget.js` |
 
 ### Trocar de provedor

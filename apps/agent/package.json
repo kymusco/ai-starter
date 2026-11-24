@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "mastra dev --env ../../.env",
-    "build": "mastra build",
+    "build": "mastra build --studio",
     "start": "cd .mastra/output && node index.mjs",
     "ingest": "node --env-file-if-exists=../../.env --import tsx scripts/ingest.ts",
     "typecheck": "tsc --noEmit",

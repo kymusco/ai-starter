@@ -11,6 +11,7 @@
     "dev:web": "npm run dev --prefix apps/web",
     "build": "npm run build --prefix apps/agent && npm run build --prefix apps/web",
     "ingest": "npm run ingest --prefix apps/agent",
+    "secrets": "node scripts/secrets.mjs",
     "typecheck": "npm run typecheck --prefix apps/agent && npm run typecheck --prefix apps/web",
     "db:start": "docker start ai-starter-db",
     "db": "docker run -d --name ai-starter-db -p 5432:5432 -e POSTGRES_USER=app -e POSTGRES_PASSWORD=app -e POSTGRES_DB=app pgvector/pgvector:pg18"

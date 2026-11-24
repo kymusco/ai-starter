@@ -35,13 +35,3 @@ export async function insertTicket(t: NewTicket): Promise<number> {
   );
   return rows[0].id;
 }
-
-export type TicketRow = { id: number; category: string; priority: string; summary: string; approved_by: string | null; created_at: string };
-
-export async function recentTickets(limit = 20): Promise<TicketRow[]> {
-  await ensureTable();
-  const { rows } = await pool.query<TicketRow>(
-    'SELECT id, category, priority, summary, approved_by, created_at FROM tickets ORDER BY id DESC LIMIT $1', [limit],
-  );
-  return rows;
-}

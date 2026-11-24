@@ -11,6 +11,8 @@ RUN npm run build
 FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production
+# O Studio é servido pelo próprio agente e descobre o endereço pela URL aberta.
+ENV MASTRA_STUDIO_PATH=./studio MASTRA_AUTO_DETECT_URL=true MASTRA_HIDE_CLOUD_CTA=true
 COPY --from=build --chown=node:node /app/.mastra/output ./
 USER node
 EXPOSE 4111

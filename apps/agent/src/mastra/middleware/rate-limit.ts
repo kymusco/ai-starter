@@ -1,9 +1,10 @@
 import type { Context, Next } from 'hono';
+import { isWebCaller } from '../auth';
 import { limits } from '../config';
 import { hit } from '../db/usage';
 
-// Quem é o visitante e de onde vem: o web manda nestes cabeçalhos. Só o web chega
-// ao agente (ele não é público), então ninguém de fora consegue forjá-los.
+// Quem é o visitante e de onde vem: o web manda nestes cabeçalhos, junto com o token
+// dele. Sem o token, o pedido é recusado pela auth e os cabeçalhos não valem nada.
 export const VISITOR_HEADER = 'x-visitor-id';
 export const CLIENT_IP_HEADER = 'x-client-ip';
 
@@ -13,7 +14,7 @@ function tooMany(c: Context, message: string) {
 
 /** Middleware do /chat: conta a mensagem e recusa quando passa de um dos limites. */
 export async function rateLimit(c: Context, next: Next) {
-  if (c.req.method !== 'POST') return next();
+  if (c.req.method !== 'POST' || !isWebCaller(c.req.header('authorization'))) return next();
   const visitor = c.req.header(VISITOR_HEADER) || 'anonimo';
   const ip = c.req.header(CLIENT_IP_HEADER) || 'desconhecido';
 

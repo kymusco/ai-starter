@@ -33,6 +33,8 @@ export async function POST(req: Request) {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
+      // O token fica só no servidor do web e, no agente, vale apenas para o chat.
+      ...(process.env.AGENT_API_TOKEN ? { authorization: `Bearer ${process.env.AGENT_API_TOKEN}` } : {}),
       // O agente usa estes dois para o limite de uso (middleware/rate-limit.ts).
       'x-visitor-id': visitor,
       'x-client-ip': clientIp(req),
