@@ -18,6 +18,10 @@ O endereço público do agente existe para o Studio, e tudo nele exige login. O 
 agente pela rede privada, com um token que só vale para o chat. A chave do modelo mora só no
 agente.
 
+O chat não depende do Mastra: ele conversa com o agente por um [contrato
+HTTP](docs/contrato-do-agente.md). Um agente em outro framework ou linguagem que o cumpra
+funciona com o mesmo chat e o mesmo widget.
+
 ## Rodar no seu computador
 
 Precisa de Node 22.13+ e Docker (para o banco).

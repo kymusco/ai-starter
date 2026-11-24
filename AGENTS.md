@@ -14,7 +14,8 @@ Monorepo com npm workspaces. Leia o `README.md` para a visão geral.
   - `db/`: as tabelas do app (ex.: `tickets`), no mesmo PostgreSQL.
   - `rag/`: conexão com o PostgreSQL (`store.ts`) e a carga da base (`ingest.ts`).
   - `public/docs/`: a base de conhecimento (Markdown).
-- `apps/web`: Next.js (App Router). `app/api/chat/route.ts` repassa a conversa ao agente.
+- `apps/web`: Next.js (App Router). `app/api/chat/route.ts` repassa a conversa ao agente, pelo
+  contrato de `docs/contrato-do-agente.md`. Mudou o pedido ou a resposta? Atualize o contrato.
   `app/chat.tsx` é o chat, usado pela página (`/`) e pelo widget (`/embed`, aberto por
   `public/widget.js` num iframe em outros sites).
   Antes de mexer nele, leia `apps/web/AGENTS.md` (escrito pelo próprio Next.js: a versão
