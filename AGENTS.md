@@ -26,6 +26,7 @@ Monorepo com npm workspaces. Leia o `README.md` para a visão geral.
 ```bash
 npm run dev          # os dois apps
 npm run typecheck    # tem de sair sem erro
+npm test --prefix apps/agent   # mascaramento de dados sensíveis
 npm run build        # o mesmo build da produção
 npm run ingest       # força a recarga da base (a subida já recarrega se os documentos mudaram)
 ```
@@ -48,6 +49,11 @@ npm run ingest       # força a recarga da base (a subida já recarrega se os do
   barra script fora do navegador: custo se protege com o limite de uso.
 - **Base de conhecimento:** o agente recarrega na subida quando `public/docs` muda (hash em
   `knowledge_state`). Não precisa de passo manual no deploy.
+- **Observabilidade:** todo processador de span precisa manter `TextRedactor`; scorer novo usa
+  `prepareRun` com `redactDeep`, ou grava a conversa original na tabela de notas. Nota e motivo
+  saem da mesma resposta do juiz.
+- **Imagem do agente:** `apps/agent/Dockerfile` leva só `.mastra/output`. Arquivo que o agente lê
+  em produção precisa estar em `src/mastra/public`, senão não entra na imagem.
 - **Conexão com o banco** é sempre a `DATABASE_URL`, montada no `kymus.yaml` com as
   referências do `db`. Não escreva host, usuário ou senha no código.
 - **Trocou o modelo de embedding?** Rode `npm run ingest`: a dimensão do índice muda.

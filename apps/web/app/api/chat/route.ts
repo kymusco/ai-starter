@@ -58,7 +58,9 @@ export async function POST(req: Request) {
     headers: {
       'content-type': upstream.headers.get('content-type') ?? 'text/event-stream',
       'x-vercel-ai-ui-message-stream': upstream.headers.get('x-vercel-ai-ui-message-stream') ?? 'v1',
-      'cache-control': 'no-cache',
+      // Sem isto, compressão e proxies podem juntar a resposta e entregar tudo no fim.
+      'cache-control': 'no-cache, no-transform',
+      'x-accel-buffering': 'no',
     },
   });
 }

@@ -30,8 +30,8 @@ O agente carrega `apps/agent/src/mastra/public/docs` como base de conhecimento n
 subida e de novo sempre que os documentos mudarem, inclusive num novo deploy.
 
 Em desenvolvimento, **http://localhost:4111** abre o Mastra Studio (preencha a URL com
-`http://localhost:4111`): converse direto com o agente, veja o rastro de cada chamada e
-aprove os chamados pausados em **Workflows**.
+`http://localhost:4111`): converse direto com o agente, veja traces, métricas e
+avaliações, e acompanhe os workflows.
 
 ## Agente e workflow: os dois modos
 
@@ -50,6 +50,25 @@ aprove os chamados pausados em **Workflows**.
 **Aprovar chamados:** abra `/admin`, entre com seu nome e a `ADMIN_PASSWORD` (12 caracteres
 ou mais), e aprove ou recuse. O nome fica registrado no chamado. Sem a senha, a tela fica
 fechada.
+
+## Traces, métricas e avaliações
+
+Tudo fica no PostgreSQL, num schema próprio (`observability`), e aparece no Studio:
+
+- **Traces:** cada conversa e workflow, com modelo, ferramentas, tempo e tokens.
+- **Métricas:** duração, tokens e uso de ferramentas ao longo do tempo.
+- **Avaliações** (`apps/agent/src/mastra/evals/scorers.ts`), numa amostra de 10% das respostas:
+  `answer-quality` (atendeu ao pedido?) e `groundedness` (o que afirma está na base?). Cada
+  avaliação também gasta modelo: ajuste com `EVAL_SAMPLE_RATE`, ou use `0` para desligar.
+
+**Privacidade:** cartão, CPF, CNPJ, e-mail, telefone, tokens e senhas são mascarados antes de
+gravar (`redact.ts`). É uma proteção por padrões, não uma garantia: nome e endereço, por
+exemplo, continuam nos traces, e a memória da conversa guarda o texto original. Por isso o
+histórico expira em 14 dias (`OBSERVABILITY_RETENTION_DAYS`). Trate esse banco como dado de
+cliente.
+
+Serve para baixo volume. Com tráfego alto, aponte `OBSERVABILITY_DATABASE_URL` para um banco
+separado; acima de ~100 chamadas por segundo, o Mastra recomenda ClickHouse.
 
 ## Publicar na Kymus
 
@@ -108,6 +127,7 @@ Mensagens com mais de 4.000 caracteres são recusadas antes de chegar ao modelo.
 | trocar a base de conhecimento | `apps/agent/src/mastra/public/docs/` (o próximo deploy recarrega; no local, reinicie ou rode `npm run ingest`) |
 | trocar o modelo ou o provedor | `MODEL` e `EMBEDDING_MODEL` no `.env` |
 | mudar a tela | `apps/web/app/chat.tsx` e `globals.css` (a página e o widget usam o mesmo componente) |
+| mudar as avaliações | `apps/agent/src/mastra/evals/scorers.ts` |
 | mudar a tela de aprovação | `apps/web/app/admin/page.tsx` |
 | mudar o botão do widget | `apps/web/public/widget.js` |
 
