@@ -20,7 +20,8 @@ agente.
 
 O chat não depende do Mastra: ele conversa com o agente por um [contrato
 HTTP](docs/contrato-do-agente.md). Um agente em outro framework ou linguagem que o cumpra
-funciona com o mesmo chat e o mesmo widget.
+funciona com o mesmo chat e o mesmo widget, como a [versão em Python, com
+LangGraph](https://github.com/kymusco/ai-starter-langgraph).
 
 ## Rodar no seu computador
 
